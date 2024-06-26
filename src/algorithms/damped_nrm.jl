@@ -14,28 +14,23 @@ function periodic_orbits(ds::CoupledODEs, alg::PeriodicOrbitFinder, igs::Vector{
     j = 0
     for ig in igs
         j+=1
-        println(j)
-        # try
+        try
             prev_step = SVector{length(ig.u0)+1}(vcat(ig.u0, ig.T))
 
             i = 1
             reinit!(tands, prev_step[1:end-1])
             step!(tands, prev_step[end])
-            # while DynamicalSystemsBase.norm(current_state(tands) - prev_step[1:end-1]) > alg.disttol && i < alg.maxiter
             while true
                 if DynamicalSystemsBase.norm(current_state(tands) - prev_step[1:end-1]) < alg.disttol || i > alg.maxiter
                     push!(pos, PeriodicPoint{typeof(current_state(ds)), typeof(current_time(ds))}(prev_step[1:end-1], prev_step[end]))
                     break
                 end
-                # println(i)
                 prev_step = next_step(prev_step, tands, alg.δ)
                 i+=1
             end
-            # println(i)
-            # println(prev_step)
-        # catch e
-            # @warn e.msg
-        # end
+        catch e
+            @warn e.msg
+        end
     end
     return pos
 end
